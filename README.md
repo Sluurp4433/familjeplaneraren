@@ -32,4 +32,27 @@ Deploy är automatisk: push till `main` → GitHub Actions bygger → publicerar
 
 ## Status
 
-Skelett (scaffold) klart. Nästa steg: M0 – inloggning + godkännande-spärr.
+M0 klart: databaslager (profiler, gate-funktioner, app_settings) + inloggning,
+registrering, glömt/återställ lösenord, "väntar på godkännande"-spärr, samt
+edge function `bootstrap-super-admin`. Nästa steg: M1 – familjegrupper, roller
+och superadmin-panel.
+
+## Uppsättning kvar (görs en gång i Supabase-dashboarden)
+
+1. **Auth → URL Configuration**
+   - Site URL: `https://sluurp4433.github.io/familjeplaneraren/`
+   - Redirect URLs: lägg till `http://localhost:5173/**` och
+     `https://sluurp4433.github.io/familjeplaneraren/**`
+   (annars pekar bekräftelse- och återställningsmejl fel.)
+2. **Skapa superadmin** – anropa edge-funktionen en gång:
+   ```bash
+   curl -X POST "https://gyjelwdvjrkbzqgnkhzk.supabase.co/functions/v1/bootstrap-super-admin" \
+     -H "Authorization: Bearer <VITE_SUPABASE_ANON_KEY>" \
+     -H "Content-Type: application/json" \
+     -d '{"email":"DIN@EPOST","name":"Ditt namn","password":"valfritt-minst-8-tecken"}'
+   ```
+   Utelämna `password` för att få ett slumpat i svaret. Funktionen självinaktiveras
+   sedan.
+3. **Aktivera deploy** – `.github/workflows/deploy.yml` ligger i
+   `.github/workflows-pending/` tills gh-token får `workflow`-scope
+   (`gh auth refresh -h github.com -s workflow`).
