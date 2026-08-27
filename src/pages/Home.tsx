@@ -1,34 +1,45 @@
-import { useAuth } from '../auth/AuthProvider'
-import { Badge, Button, Card } from '../components/ui'
+import { Link } from 'react-router-dom'
+import { useActiveGroup } from '../group/ActiveGroupProvider'
+import { Button, Card, PageHeader } from '../components/ui'
 
-// Tillfällig inloggad landningssida. Ersätts av kalendern (M2) och riktig
-// Layout + gruppväxlare (M1).
+// Tillfällig inloggad landningssida. Ersätts av kalendern i M2.
 export function Home() {
-  const { profile, isSuperAdmin, signOut } = useAuth()
+  const { activeGroup, myRole } = useActiveGroup()
 
   return (
-    <main className="min-h-dvh bg-brand-50">
-      <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
-        <span className="font-semibold text-brand-800">Familjeplaneraren</span>
-        <div className="flex items-center gap-3">
-          {isSuperAdmin && <Badge color="amber">Superadmin</Badge>}
-          <Button variant="ghost" size="md" onClick={() => signOut()}>
-            Logga ut
-          </Button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-xl px-4 py-10">
-        <Card className="p-6">
-          <h1 className="text-lg font-semibold text-brand-800">
-            Välkommen, {profile?.name ?? profile?.email}
-          </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Ditt konto är godkänt. Familjegrupper, kalender, listor och påminnelser byggs i kommande
-            steg.
-          </p>
-        </Card>
-      </div>
-    </main>
+    <div>
+      <PageHeader
+        title={activeGroup ? activeGroup.name : 'Hem'}
+        description={activeGroup ? `Din roll: ${roleLabel(myRole)}` : undefined}
+      />
+      <Card className="p-6">
+        <p className="text-sm text-slate-600">
+          Familjegrupper och roller är på plats. Kalender, listor och påminnelser byggs i kommande
+          steg.
+        </p>
+        {(myRole === 'admin' || myRole === 'super') && activeGroup && (
+          <div className="mt-4">
+            <Link to="/familj">
+              <Button variant="secondary">Hantera familjen</Button>
+            </Link>
+          </div>
+        )}
+      </Card>
+    </div>
   )
+}
+
+function roleLabel(role: string | null): string {
+  switch (role) {
+    case 'admin':
+      return 'Admin'
+    case 'medlem':
+      return 'Medlem'
+    case 'begransad':
+      return 'Begränsad (endast läsa)'
+    case 'super':
+      return 'Superadmin'
+    default:
+      return '–'
+  }
 }

@@ -32,10 +32,17 @@ Deploy är automatisk: push till `main` → GitHub Actions bygger → publicerar
 
 ## Status
 
-M0 klart: databaslager (profiler, gate-funktioner, app_settings) + inloggning,
-registrering, glömt/återställ lösenord, "väntar på godkännande"-spärr, samt
-edge function `bootstrap-super-admin`. Nästa steg: M1 – familjegrupper, roller
-och superadmin-panel.
+M0 + M1 klart:
+- **M0** – databaslager (profiler, gate-funktioner, app_settings), inloggning,
+  registrering, glömt/återställ lösenord, godkännande-spärr, `bootstrap-super-admin`.
+- **M1** – familjegrupper (`groups`/`group_members`/`people`/`people_parents`),
+  fyra rollnivåer med RLS-isolering mellan grupper, `ActiveGroupProvider` +
+  gruppväxlare, superadmin-panel (godkänn konton, skapa familjer, tilldela
+  medlemmar/roller, hantera personer), `GroupAdmin`-sida.
+
+Nästa steg: M2 – kalendern (händelser, "vem gör vad", personfilter, ikoner).
+(Ej gjort än: edge function `admin-create-user` – onboarding sker via
+självregistrering + godkännande så länge.)
 
 ## Uppsättning kvar (görs en gång i Supabase-dashboarden)
 
