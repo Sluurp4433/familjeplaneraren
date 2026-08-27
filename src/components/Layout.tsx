@@ -22,8 +22,8 @@ export function Layout() {
           <span className="font-semibold text-brand-800">Familjeplaneraren</span>
           <GroupSwitcher />
           <nav className="flex items-center gap-1">
-            <NavLink to="/hem" className={navClass}>
-              Hem
+            <NavLink to="/kalender" className={navClass}>
+              Kalender
             </NavLink>
             {isGroupAdmin && activeGroup && (
               <NavLink to="/familj" className={navClass}>

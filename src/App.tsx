@@ -8,7 +8,7 @@ import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
 import { PendingApproval } from './pages/PendingApproval'
 import { NoGroups } from './pages/NoGroups'
-import { Home } from './pages/Home'
+import { Calendar } from './pages/Calendar'
 import { SuperAdmin } from './pages/SuperAdmin'
 import { GroupAdmin } from './pages/GroupAdmin'
 
@@ -43,10 +43,10 @@ export function App() {
         }
       >
         <Route
-          path="/hem"
+          path="/kalender"
           element={
             <GroupGate>
-              <Home />
+              <Calendar />
             </GroupGate>
           }
         />
@@ -68,6 +68,7 @@ export function App() {
         />
       </Route>
 
+      <Route path="/hem" element={<Navigate to="/kalender" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

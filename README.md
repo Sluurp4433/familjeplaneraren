@@ -40,9 +40,15 @@ M0 + M1 klart:
   gruppväxlare, superadmin-panel (godkänn konton, skapa familjer, tilldela
   medlemmar/roller, hantera personer), `GroupAdmin`-sida.
 
-Nästa steg: M2 – kalendern (händelser, "vem gör vad", personfilter, ikoner).
-(Ej gjort än: edge function `admin-create-user` – onboarding sker via
-självregistrering + godkännande så länge.)
+- **M2** – kalendern: `events` + `event_assignees` med fyra-nivåers RLS,
+  månadsvy (desktop-grid + mobil prick-grid), `EventForm` (vem gör vad,
+  hämtar/lämnar, aktivitetssymboler, privat), personfilter, aktivitetsikoner
+  (emoji: ⚽ 🩰 …). Route `/kalender`.
+
+Nästa steg: M3 – återkommande händelser (`event_series`, materialisering, cron,
+"denna / denna och kommande / hela serien").
+(Ej gjort än: `admin-create-user` – onboarding via självregistrering +
+godkännande så länge. Vecko-vy i kalendern – bara månadsvy nu.)
 
 ## Uppsättning kvar (görs en gång i Supabase-dashboarden)
 
