@@ -102,9 +102,19 @@ export function useCreateEvent(groupId: string) {
 export function useUpdateEvent(groupId: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, input }: { id: string; input: EventInput }) => {
+    mutationFn: async ({
+      id,
+      input,
+      markOverridden,
+    }: {
+      id: string
+      input: EventInput
+      /** Sätts när en enskild förekomst i en serie redigeras. */
+      markOverridden?: boolean
+    }) => {
       const { assigneeIds, ...ev } = input
-      const { error } = await supabase.from('events').update(ev).eq('id', id)
+      const patch = markOverridden ? { ...ev, overridden: true } : ev
+      const { error } = await supabase.from('events').update(patch).eq('id', id)
       if (error) throw error
       await syncAssignees(id, groupId, assigneeIds)
     },
@@ -112,6 +122,21 @@ export function useUpdateEvent(groupId: string) {
       qc.invalidateQueries({ queryKey: ['events', groupId] })
       qc.invalidateQueries({ queryKey: ['event', v.id] })
     },
+  })
+}
+
+/** "Bara denna" – ta bort en förekomst utan att röra serien. */
+export function useCancelEvent(groupId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('events')
+        .update({ status: 'cancelled', overridden: true })
+        .eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['events', groupId] }),
   })
 }
 

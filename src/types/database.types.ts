@@ -87,27 +87,104 @@ export type Database = {
         Relationships: []
       }
       event_assignees: {
-        Row: {
-          event_id: string
-          group_id: string
-          person_id: string
-        }
-        Insert: {
-          event_id: string
-          group_id: string
-          person_id: string
-        }
-        Update: {
-          event_id?: string
-          group_id?: string
-          person_id?: string
-        }
+        Row: { event_id: string; group_id: string; person_id: string }
+        Insert: { event_id: string; group_id: string; person_id: string }
+        Update: { event_id?: string; group_id?: string; person_id?: string }
         Relationships: [
           {
             foreignKeyName: "event_assignees_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_series: {
+        Row: {
+          all_day: boolean
+          bymonthday: number | null
+          byweekday: number[] | null
+          count: number | null
+          created_at: string
+          created_by: string | null
+          dropoff_person_id: string | null
+          dtstart: string
+          duration_minutes: number
+          freq: string
+          group_id: string
+          icon_key: string | null
+          id: string
+          interval: number
+          is_private: boolean
+          location: string | null
+          notes: string | null
+          pickup_person_id: string | null
+          start_time: string | null
+          title: string
+          until: string | null
+          updated_at: string
+        }
+        Insert: {
+          all_day?: boolean
+          bymonthday?: number | null
+          byweekday?: number[] | null
+          count?: number | null
+          created_at?: string
+          created_by?: string | null
+          dropoff_person_id?: string | null
+          dtstart: string
+          duration_minutes?: number
+          freq: string
+          group_id: string
+          icon_key?: string | null
+          id?: string
+          interval?: number
+          is_private?: boolean
+          location?: string | null
+          notes?: string | null
+          pickup_person_id?: string | null
+          start_time?: string | null
+          title: string
+          until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          all_day?: boolean
+          bymonthday?: number | null
+          byweekday?: number[] | null
+          count?: number | null
+          created_at?: string
+          created_by?: string | null
+          dropoff_person_id?: string | null
+          dtstart?: string
+          duration_minutes?: number
+          freq?: string
+          group_id?: string
+          icon_key?: string | null
+          id?: string
+          interval?: number
+          is_private?: boolean
+          location?: string | null
+          notes?: string | null
+          pickup_person_id?: string | null
+          start_time?: string | null
+          title?: string
+          until?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      event_series_assignees: {
+        Row: { group_id: string; person_id: string; series_id: string }
+        Insert: { group_id: string; person_id: string; series_id: string }
+        Update: { group_id?: string; person_id?: string; series_id?: string }
+        Relationships: [
+          {
+            foreignKeyName: "event_series_assignees_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "event_series"
             referencedColumns: ["id"]
           },
         ]
@@ -178,13 +255,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "events_dropoff_person_id_fkey"
-            columns: ["dropoff_person_id"]
-            isOneToOne: false
-            referencedRelation: "people"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "events_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
@@ -192,10 +262,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "events_pickup_person_id_fkey"
-            columns: ["pickup_person_id"]
+            foreignKeyName: "events_series_id_fkey"
+            columns: ["series_id"]
             isOneToOne: false
-            referencedRelation: "people"
+            referencedRelation: "event_series"
             referencedColumns: ["id"]
           },
         ]
@@ -313,44 +383,10 @@ export type Database = {
         ]
       }
       people_parents: {
-        Row: {
-          group_id: string
-          parent_person_id: string
-          person_id: string
-        }
-        Insert: {
-          group_id: string
-          parent_person_id: string
-          person_id: string
-        }
-        Update: {
-          group_id?: string
-          parent_person_id?: string
-          person_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "people_parents_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "people_parents_parent_person_id_fkey"
-            columns: ["parent_person_id"]
-            isOneToOne: false
-            referencedRelation: "people"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "people_parents_person_id_fkey"
-            columns: ["person_id"]
-            isOneToOne: false
-            referencedRelation: "people"
-            referencedColumns: ["id"]
-          },
-        ]
+        Row: { group_id: string; parent_person_id: string; person_id: string }
+        Insert: { group_id: string; parent_person_id: string; person_id: string }
+        Update: { group_id?: string; parent_person_id?: string; person_id?: string }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -390,7 +426,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      series_split: {
+        Args: { p_from_event: string; patch: Json }
+        Returns: string
+      }
     }
     Enums: {
       group_role: "admin" | "medlem" | "begransad"
@@ -535,3 +574,4 @@ export type GroupMember = Database["public"]["Tables"]["group_members"]["Row"]
 export type Person = Database["public"]["Tables"]["people"]["Row"]
 export type EventRow = Database["public"]["Tables"]["events"]["Row"]
 export type EventInsert = Database["public"]["Tables"]["events"]["Insert"]
+export type EventSeries = Database["public"]["Tables"]["event_series"]["Row"]

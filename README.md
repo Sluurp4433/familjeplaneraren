@@ -45,10 +45,15 @@ M0 + M1 klart:
   hämtar/lämnar, aktivitetssymboler, privat), personfilter, aktivitetsikoner
   (emoji: ⚽ 🩰 …). Route `/kalender`.
 
-Nästa steg: M3 – återkommande händelser (`event_series`, materialisering, cron,
-"denna / denna och kommande / hela serien").
-(Ej gjort än: `admin-create-user` – onboarding via självregistrering +
-godkännande så länge. Vecko-vy i kalendern – bara månadsvy nu.)
+- **M3** – återkommande händelser: `event_series` (weekly/monthly, interval,
+  veckodagar, slut på datum/antal) → materialiseras till `events`-rader via
+  trigger + nattlig `pg_cron`, 12-månadershorisont. Redigering: "bara denna"
+  (overridden), "denna och kommande" (`series_split`), "hela serien". Undantag =
+  overridden / status='cancelled'.
+
+Nästa steg: M4 – påminnelser via e-post (`event_reminders`, `reminder_log`,
+`pg_cron` + edge function `send-reminders` + Resend).
+(Ej gjort än: `admin-create-user`; vecko-vy i kalendern.)
 
 ## Uppsättning kvar (görs en gång i Supabase-dashboarden)
 
