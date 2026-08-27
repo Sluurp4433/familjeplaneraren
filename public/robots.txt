@@ -1,0 +1,3 @@
+# Privat familjeportal – ska inte indexeras.
+User-agent: *
+Disallow: /
