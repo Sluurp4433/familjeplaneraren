@@ -11,6 +11,7 @@ import { NoGroups } from './pages/NoGroups'
 import { Calendar } from './pages/Calendar'
 import { Lists } from './pages/Lists'
 import { ListDetail } from './pages/ListDetail'
+import { Meals } from './pages/Meals'
 import { SuperAdmin } from './pages/SuperAdmin'
 import { GroupAdmin } from './pages/GroupAdmin'
 
@@ -65,6 +66,14 @@ export function App() {
           element={
             <GroupGate>
               <ListDetail />
+            </GroupGate>
+          }
+        />
+        <Route
+          path="/matsedel"
+          element={
+            <GroupGate>
+              <Meals />
             </GroupGate>
           }
         />

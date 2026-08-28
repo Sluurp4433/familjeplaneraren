@@ -382,6 +382,118 @@ export type Database = {
           },
         ]
       }
+      meals: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          group_id: string
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          group_id: string
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          group_id?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      meal_ingredients: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          meal_id: string
+          position: number
+          quantity: string | null
+          text: string
+        }
+        Insert: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          meal_id: string
+          position?: number
+          quantity?: string | null
+          text: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          meal_id?: string
+          position?: number
+          quantity?: string | null
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_ingredients_meal_id_fkey"
+            columns: ["meal_id"]
+            isOneToOne: false
+            referencedRelation: "meals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meal_plan: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date: string
+          freetext: string | null
+          group_id: string
+          id: string
+          meal_id: string | null
+          slot: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date: string
+          freetext?: string | null
+          group_id: string
+          id?: string
+          meal_id?: string | null
+          slot?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          freetext?: string | null
+          group_id?: string
+          id?: string
+          meal_id?: string | null
+          slot?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_plan_meal_id_fkey"
+            columns: ["meal_id"]
+            isOneToOne: false
+            referencedRelation: "meals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lists: {
         Row: {
           created_at: string
@@ -666,6 +778,10 @@ export type Database = {
         Args: { p_from_event: string; patch: Json }
         Returns: string
       }
+      add_meal_to_list: {
+        Args: { p_meal: string; p_list: string }
+        Returns: number
+      }
     }
     Enums: {
       group_role: "admin" | "medlem" | "begransad"
@@ -815,3 +931,6 @@ export type EventReminder = Database["public"]["Tables"]["event_reminders"]["Row
 export type EventSeriesReminder = Database["public"]["Tables"]["event_series_reminders"]["Row"]
 export type ListRow = Database["public"]["Tables"]["lists"]["Row"]
 export type ListItem = Database["public"]["Tables"]["list_items"]["Row"]
+export type Meal = Database["public"]["Tables"]["meals"]["Row"]
+export type MealIngredient = Database["public"]["Tables"]["meal_ingredients"]["Row"]
+export type MealPlanRow = Database["public"]["Tables"]["meal_plan"]["Row"]

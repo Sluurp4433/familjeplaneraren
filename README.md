@@ -63,7 +63,12 @@ M0 + M1 klart:
   realtid via `postgres_changes` + polling som skyddsnät (20 s). Sidor
   `/listor` + `/listor/:id`.
 
-Nästa steg: M6 – matsedel (veckmeny → fyll på inköpslista).
+- **M6** – matsedel: `meals` + `meal_ingredients` + `meal_plan` (unik
+  `(group_id,date,slot)`), veckovy med middag per dag, sparade rätter med
+  ingredienser, `add_meal_to_list()` RPC ("lägg alla ingredienser i
+  inköpslistan", dedup mot obockade). Sida `/matsedel`.
+
+Nästa steg: M7 – polish (audit-vy i admin, veckodigest, `admin-create-user`).
 
 ## Aktivera påminnelser (engångssetup)
 
