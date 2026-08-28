@@ -18,6 +18,13 @@ import {
   type Recurrence,
   type SeriesInput,
 } from '../lib/series'
+import {
+  fetchEventReminders,
+  fetchSeriesReminders,
+  syncEventReminders,
+  syncSeriesReminders,
+  type ReminderDraft,
+} from '../lib/reminders'
 import { fromDatetimeLocal, toDatetimeLocal } from '../lib/format'
 import { useToast } from './Toast'
 import { Modal } from './Modal'
@@ -25,6 +32,7 @@ import { Alert, Button, Field, Input, Select, Textarea } from './ui'
 import { PersonPicker } from './PersonPicker'
 import { IconPicker } from './IconPicker'
 import { NO_RECURRENCE, RecurrenceEditor } from './RecurrenceEditor'
+import { ReminderEditor } from './ReminderEditor'
 import { RecurrenceScopeDialog, type Scope } from './RecurrenceScopeDialog'
 
 type Props = {
@@ -88,6 +96,7 @@ export function EventForm({ open, onClose, groupId, people, event, defaultDate }
   const [f, setF] = useState(() => baseDefaults(event, defaultDate))
   const [recurEnabled, setRecurEnabled] = useState(false)
   const [recur, setRecur] = useState<Recurrence>(NO_RECURRENCE)
+  const [reminders, setReminders] = useState<ReminderDraft[]>([])
   const [error, setError] = useState<string | null>(null)
   const [scope, setScope] = useState<'edit' | 'delete' | null>(null)
 
@@ -98,16 +107,31 @@ export function EventForm({ open, onClose, groupId, people, event, defaultDate }
     queryFn: () => fetchSeries(event!.series_id as string),
   })
 
+  // Ladda påminnelser.
+  const { data: reminderData } = useQuery({
+    queryKey: ['reminders-for-form', event?.id, event?.series_id],
+    enabled: open && !!event,
+    queryFn: () =>
+      event!.series_id
+        ? fetchSeriesReminders(event!.series_id)
+        : fetchEventReminders(event!.id),
+  })
+
   useEffect(() => {
     if (!open) return
     setF(baseDefaults(event, defaultDate))
     setError(null)
     setScope(null)
+    if (!event) setReminders([])
     if (!event?.series_id) {
       setRecurEnabled(false)
       setRecur(NO_RECURRENCE)
     }
   }, [open, event, defaultDate])
+
+  useEffect(() => {
+    if (reminderData) setReminders(reminderData)
+  }, [reminderData])
 
   useEffect(() => {
     if (seriesData?.series) {
@@ -198,10 +222,16 @@ export function EventForm({ open, onClose, groupId, people, event, defaultDate }
     try {
       if (chosen === 'single') {
         await updateEvent.mutateAsync({ id: event!.id, input: buildEventInput(), markOverridden: true })
+        await syncEventReminders(event!.id, groupId, reminders)
       } else if (chosen === 'future') {
-        await splitSeries.mutateAsync({ fromEventId: event!.id, input: buildSeriesInput() })
+        const newSeriesId = await splitSeries.mutateAsync({
+          fromEventId: event!.id,
+          input: buildSeriesInput(),
+        })
+        if (newSeriesId) await syncSeriesReminders(newSeriesId, groupId, reminders)
       } else {
         await updateSeries.mutateAsync({ id: event!.series_id as string, input: buildSeriesInput() })
+        await syncSeriesReminders(event!.series_id as string, groupId, reminders)
       }
       toast.success('Sparat')
       onClose()
@@ -229,14 +259,20 @@ export function EventForm({ open, onClose, groupId, people, event, defaultDate }
     if (!validate()) return
     try {
       if (!event) {
-        if (recurEnabled) await createSeries.mutateAsync(buildSeriesInput())
-        else await createEvent.mutateAsync(buildEventInput())
+        if (recurEnabled) {
+          const seriesId = await createSeries.mutateAsync(buildSeriesInput())
+          await syncSeriesReminders(seriesId, groupId, reminders)
+        } else {
+          const eventId = await createEvent.mutateAsync(buildEventInput())
+          await syncEventReminders(eventId, groupId, reminders)
+        }
         toast.success('Händelse skapad')
         onClose()
       } else if (isOccurrence) {
         setScope('edit')
       } else {
         await updateEvent.mutateAsync({ id: event.id, input: buildEventInput() })
+        await syncEventReminders(event.id, groupId, reminders)
         toast.success('Sparat')
         onClose()
       }
@@ -370,6 +406,8 @@ export function EventForm({ open, onClose, groupId, people, event, defaultDate }
           <Field label="Symbol">
             <IconPicker value={f.iconKey} onChange={(k) => set('iconKey', k)} />
           </Field>
+
+          <ReminderEditor list={reminders} onChange={setReminders} />
 
           <label className="flex items-center gap-2 text-sm text-slate-700">
             <input

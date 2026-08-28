@@ -137,11 +137,12 @@ export function useSplitSeries(groupId: string) {
         count: r.endMode === 'count' ? r.count : null,
         assignee_ids: input.assigneeIds,
       }
-      const { error } = await supabase.rpc('series_split', {
+      const { data, error } = await supabase.rpc('series_split', {
         p_from_event: fromEventId,
         patch: patch as never,
       })
       if (error) throw error
+      return data as string // nya seriens id
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['events', groupId] }),
   })

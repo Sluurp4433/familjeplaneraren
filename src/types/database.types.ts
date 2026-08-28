@@ -10,7 +10,7 @@ export type Json =
 
 export type Database = {
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -100,6 +100,65 @@ export type Database = {
           },
         ]
       }
+      event_reminders: {
+        Row: {
+          at_time: string | null
+          bring_list: string[]
+          created_at: string
+          created_by: string | null
+          custom_emails: string[]
+          event_id: string
+          fire_at: string | null
+          group_id: string
+          id: string
+          message: string | null
+          offset_kind: string
+          offset_minutes: number | null
+          recipient_mode: string
+          updated_at: string
+        }
+        Insert: {
+          at_time?: string | null
+          bring_list?: string[]
+          created_at?: string
+          created_by?: string | null
+          custom_emails?: string[]
+          event_id: string
+          fire_at?: string | null
+          group_id: string
+          id?: string
+          message?: string | null
+          offset_kind: string
+          offset_minutes?: number | null
+          recipient_mode?: string
+          updated_at?: string
+        }
+        Update: {
+          at_time?: string | null
+          bring_list?: string[]
+          created_at?: string
+          created_by?: string | null
+          custom_emails?: string[]
+          event_id?: string
+          fire_at?: string | null
+          group_id?: string
+          id?: string
+          message?: string | null
+          offset_kind?: string
+          offset_minutes?: number | null
+          recipient_mode?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_reminders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_series: {
         Row: {
           all_day: boolean
@@ -182,6 +241,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "event_series_assignees_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "event_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_series_reminders: {
+        Row: {
+          at_time: string | null
+          bring_list: string[]
+          created_at: string
+          created_by: string | null
+          custom_emails: string[]
+          group_id: string
+          id: string
+          message: string | null
+          offset_kind: string
+          offset_minutes: number | null
+          recipient_mode: string
+          series_id: string
+        }
+        Insert: {
+          at_time?: string | null
+          bring_list?: string[]
+          created_at?: string
+          created_by?: string | null
+          custom_emails?: string[]
+          group_id: string
+          id?: string
+          message?: string | null
+          offset_kind: string
+          offset_minutes?: number | null
+          recipient_mode?: string
+          series_id: string
+        }
+        Update: {
+          at_time?: string | null
+          bring_list?: string[]
+          created_at?: string
+          created_by?: string | null
+          custom_emails?: string[]
+          group_id?: string
+          id?: string
+          message?: string | null
+          offset_kind?: string
+          offset_minutes?: number | null
+          recipient_mode?: string
+          series_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_series_reminders_series_id_fkey"
             columns: ["series_id"]
             isOneToOne: false
             referencedRelation: "event_series"
@@ -421,6 +533,39 @@ export type Database = {
         }
         Relationships: []
       }
+      reminder_log: {
+        Row: {
+          attempts: number
+          claimed_at: string | null
+          error: string | null
+          fire_at: string
+          id: string
+          reminder_id: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          claimed_at?: string | null
+          error?: string | null
+          fire_at: string
+          id?: string
+          reminder_id: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          claimed_at?: string | null
+          error?: string | null
+          fire_at?: string
+          id?: string
+          reminder_id?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -575,3 +720,5 @@ export type Person = Database["public"]["Tables"]["people"]["Row"]
 export type EventRow = Database["public"]["Tables"]["events"]["Row"]
 export type EventInsert = Database["public"]["Tables"]["events"]["Insert"]
 export type EventSeries = Database["public"]["Tables"]["event_series"]["Row"]
+export type EventReminder = Database["public"]["Tables"]["event_reminders"]["Row"]
+export type EventSeriesReminder = Database["public"]["Tables"]["event_series_reminders"]["Row"]

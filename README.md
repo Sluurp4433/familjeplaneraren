@@ -51,9 +51,26 @@ M0 + M1 klart:
   (overridden), "denna och kommande" (`series_split`), "hela serien". Undantag =
   overridden / status='cancelled'.
 
-Nästa steg: M4 – påminnelser via e-post (`event_reminders`, `reminder_log`,
-`pg_cron` + edge function `send-reminders` + Resend).
-(Ej gjort än: `admin-create-user`; vecko-vy i kalendern.)
+- **M4** – påminnelser via e-post: `event_reminders` / `event_series_reminders`
+  med trigger-beräknad `fire_at` (väggklocka i gruppens tidszon: "kvällen innan
+  kl HH:MM" / "på morgonen" / "N min innan"), meddelande + "ta med"-lista,
+  mottagare (ansvariga / alla vuxna / egna adresser). `pg_cron` var 10:e min →
+  `dispatch_due_reminders()` → idempotent claim i `reminder_log` → edge function
+  `send-reminders` → Resend. `ReminderEditor` i EventForm.
+
+Nästa steg: M5 – delade listor (inköp/att-göra) med realtid.
+
+## Aktivera påminnelser (engångssetup)
+
+1. **Resend**: skapa gratiskonto på resend.com → API-nyckel.
+2. **Supabase → Edge Functions → send-reminders → Secrets**, lägg till:
+   - `RESEND_API_KEY` = din Resend-nyckel
+   - `CRON_SECRET` = `mxSTXzJs2RDGsZHHpMxCb6y8TVMfgv6fRwj9SRwJ`
+   - (valfritt) `REMINDER_FROM` = `Familjeplaneraren <onboarding@resend.dev>` tills egen domän
+3. Klart – cron-jobbet `dispatch-reminders` skickar sen automatiskt.
+   Felmeddelanden syns i tabellen `reminder_log` (kolumn `error`).
+
+(Ej gjort än: `admin-create-user`; vecko-vy i kalendern; digest-mejl.)
 
 ## Uppsättning kvar (görs en gång i Supabase-dashboarden)
 
