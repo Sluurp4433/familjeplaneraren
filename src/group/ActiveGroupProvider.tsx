@@ -55,15 +55,20 @@ export function ActiveGroupProvider({ children }: { children: ReactNode }) {
     queryKey: ['my-groups', userId],
     enabled: !!userId && isApproved,
     queryFn: async (): Promise<MyGroup[]> => {
+      // Filtrera på user_id – RLS visar hela medlemslistan (och för superadmin
+      // alla gruppers), så utan filter fick vi dubbletter/fel roll.
       const { data, error } = await supabase
         .from('group_members')
         .select('role, groups(id, name, timezone)')
+        .eq('user_id', userId as string)
         .order('created_at', { ascending: true })
       if (error) throw error
+      const seen = new Set<string>()
       return (data ?? [])
         .map((row) => {
           const g = Array.isArray(row.groups) ? row.groups[0] : row.groups
-          if (!g) return null
+          if (!g || seen.has(g.id)) return null
+          seen.add(g.id)
           return { id: g.id, name: g.name, timezone: g.timezone, role: row.role }
         })
         .filter((x): x is MyGroup => x !== null)

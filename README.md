@@ -58,7 +58,12 @@ M0 + M1 klart:
   `dispatch_due_reminders()` → idempotent claim i `reminder_log` → edge function
   `send-reminders` → Resend. `ReminderEditor` i EventForm.
 
-Nästa steg: M5 – delade listor (inköp/att-göra) med realtid.
+- **M5** – delade listor: `lists` + `list_items` (inköp / att-göra), vilken
+  skrivare som helst kan bocka av vilken rad som helst, optimistisk toggle,
+  realtid via `postgres_changes` + polling som skyddsnät (20 s). Sidor
+  `/listor` + `/listor/:id`.
+
+Nästa steg: M6 – matsedel (veckmeny → fyll på inköpslista).
 
 ## Aktivera påminnelser (engångssetup)
 

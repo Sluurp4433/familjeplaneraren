@@ -25,6 +25,9 @@ export function Layout() {
             <NavLink to="/kalender" className={navClass}>
               Kalender
             </NavLink>
+            <NavLink to="/listor" className={navClass}>
+              Listor
+            </NavLink>
             {isGroupAdmin && activeGroup && (
               <NavLink to="/familj" className={navClass}>
                 Familj

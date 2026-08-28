@@ -382,6 +382,97 @@ export type Database = {
           },
         ]
       }
+      lists: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          group_id: string
+          id: string
+          kind: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          group_id: string
+          id?: string
+          kind?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          group_id?: string
+          id?: string
+          kind?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lists_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      list_items: {
+        Row: {
+          checked: boolean
+          checked_at: string | null
+          checked_by: string | null
+          created_at: string
+          created_by: string | null
+          group_id: string
+          id: string
+          list_id: string
+          note: string | null
+          position: number
+          text: string
+          updated_at: string
+        }
+        Insert: {
+          checked?: boolean
+          checked_at?: string | null
+          checked_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          group_id?: string
+          id?: string
+          list_id: string
+          note?: string | null
+          position?: number
+          text: string
+          updated_at?: string
+        }
+        Update: {
+          checked?: boolean
+          checked_at?: string | null
+          checked_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          group_id?: string
+          id?: string
+          list_id?: string
+          note?: string | null
+          position?: number
+          text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "list_items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_members: {
         Row: {
           created_at: string
@@ -722,3 +813,5 @@ export type EventInsert = Database["public"]["Tables"]["events"]["Insert"]
 export type EventSeries = Database["public"]["Tables"]["event_series"]["Row"]
 export type EventReminder = Database["public"]["Tables"]["event_reminders"]["Row"]
 export type EventSeriesReminder = Database["public"]["Tables"]["event_series_reminders"]["Row"]
+export type ListRow = Database["public"]["Tables"]["lists"]["Row"]
+export type ListItem = Database["public"]["Tables"]["list_items"]["Row"]

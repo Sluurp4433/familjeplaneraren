@@ -9,6 +9,8 @@ import { ResetPassword } from './pages/ResetPassword'
 import { PendingApproval } from './pages/PendingApproval'
 import { NoGroups } from './pages/NoGroups'
 import { Calendar } from './pages/Calendar'
+import { Lists } from './pages/Lists'
+import { ListDetail } from './pages/ListDetail'
 import { SuperAdmin } from './pages/SuperAdmin'
 import { GroupAdmin } from './pages/GroupAdmin'
 
@@ -47,6 +49,22 @@ export function App() {
           element={
             <GroupGate>
               <Calendar />
+            </GroupGate>
+          }
+        />
+        <Route
+          path="/listor"
+          element={
+            <GroupGate>
+              <Lists />
+            </GroupGate>
+          }
+        />
+        <Route
+          path="/listor/:id"
+          element={
+            <GroupGate>
+              <ListDetail />
             </GroupGate>
           }
         />
