@@ -89,17 +89,22 @@ sedan `.github/workflows-pending/deploy.yml` → `.github/workflows/`).
 
 För digest-mejlen: sätt även `digest_url` i `private.app_config` (redan gjort).
 
-## Aktivera påminnelser (engångssetup)
+## Aktivera påminnelser + veckodigest (engångssetup)
 
 1. **Resend**: skapa gratiskonto på resend.com → API-nyckel.
-2. **Supabase → Edge Functions → send-reminders → Secrets**, lägg till:
+2. Hämta cron-hemligheten (den ligger bara i databasen, aldrig i repot).
+   Kör i **SQL Editor**:
+   ```sql
+   select value from private.app_config where key = 'cron_secret';
+   ```
+3. **Supabase → Edge Functions → Secrets** – lägg till på **både**
+   `send-reminders` och `send-digest`:
    - `RESEND_API_KEY` = din Resend-nyckel
-   - `CRON_SECRET` = `mxSTXzJs2RDGsZHHpMxCb6y8TVMfgv6fRwj9SRwJ`
+   - `CRON_SECRET` = värdet från steg 2
    - (valfritt) `REMINDER_FROM` = `Familjeplaneraren <onboarding@resend.dev>` tills egen domän
-3. Klart – cron-jobbet `dispatch-reminders` skickar sen automatiskt.
-   Felmeddelanden syns i tabellen `reminder_log` (kolumn `error`).
-
-(Ej gjort än: `admin-create-user`; vecko-vy i kalendern; digest-mejl.)
+4. Klart – cron-jobben skickar sen automatiskt.
+   Felmeddelanden syns i `reminder_log` / `digest_log` (kolumn `error`),
+   eller under Administration → Loggar i appen.
 
 ## Uppsättning kvar (görs en gång i Supabase-dashboarden)
 

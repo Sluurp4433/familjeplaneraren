@@ -61,7 +61,22 @@ Deno.serve(async (req) => {
     const emails = new Set<string>()
     try {
       if (r.recipient_mode === 'custom') {
-        for (const e of r.custom_emails ?? []) if (e) emails.add(e.toLowerCase())
+        // Bara adresser som redan finns i familjen – appen ska inte kunna
+        // användas för att skicka mejl till godtyckliga adresser.
+        const requested = (r.custom_emails ?? []).map((e: string) => String(e).toLowerCase()).filter(Boolean)
+        if (requested.length) {
+          const allowed = new Set<string>()
+          const { data: ppl } = await db
+            .from('people').select('contact_email').eq('group_id', ev.group_id).not('contact_email', 'is', null)
+          for (const p of ppl ?? []) if (p.contact_email) allowed.add(String(p.contact_email).toLowerCase())
+          const { data: gm } = await db.from('group_members').select('user_id').eq('group_id', ev.group_id)
+          const uids = (gm ?? []).map((x) => x.user_id)
+          if (uids.length) {
+            const { data: profs } = await db.from('profiles').select('email').in('id', uids)
+            for (const p of profs ?? []) if (p.email) allowed.add(String(p.email).toLowerCase())
+          }
+          for (const e of requested) if (allowed.has(e)) emails.add(e)
+        }
       } else if (r.recipient_mode === 'group_adults') {
         const { data: adults } = await db
           .from('people')

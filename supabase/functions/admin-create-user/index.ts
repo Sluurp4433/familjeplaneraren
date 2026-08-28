@@ -1,8 +1,8 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 // Provisionerar en familjemedlem med ett tillfälligt lösenord. Anroparen måste
-// vara superadmin, eller admin i gruppen som anges. Returnerar temp-lösenordet
-// EN gång – admin får relä det.
+// vara superadmin, eller admin i gruppen som anges. Gruppadmins skapar konton
+// som väntar på superadmins godkännande. Returnerar temp-lösenordet EN gång.
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -31,7 +31,6 @@ Deno.serve(async (req) => {
     const name = String(body.name ?? '').trim()
     const groupId: string | null = body.groupId ?? null
     const role: string = ['admin', 'medlem', 'begransad'].includes(body.role) ? body.role : 'medlem'
-    const autoApprove = body.autoApprove !== false
     if (!email) return json({ error: 'E-postadress krävs.' }, 400)
 
     // 1. verifiera anroparen
@@ -40,13 +39,18 @@ Deno.serve(async (req) => {
     if (!me.user) return json({ error: 'Ej inloggad.' }, 401)
     const { data: myProfile } = await caller
       .from('profiles').select('is_super_admin').eq('id', me.user.id).single()
-    let allowed = !!myProfile?.is_super_admin
+    const isSuper = !!myProfile?.is_super_admin
+    let allowed = isSuper
     if (!allowed && groupId) {
       const { data: gm } = await caller
         .from('group_members').select('role').eq('group_id', groupId).eq('user_id', me.user.id).maybeSingle()
       allowed = gm?.role === 'admin'
     }
     if (!allowed) return json({ error: 'Behörighet saknas.' }, 403)
+
+    // Bara superadmin får ge global åtkomst direkt. Gruppadmins skapar ett
+    // konto som väntar på superadmins godkännande.
+    const autoApprove = isSuper && body.autoApprove !== false
 
     // 2. skapa användaren med service role
     const admin = createClient(url, service)
@@ -71,7 +75,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    return json({ userId: uid, email, tempPassword: password })
+    return json({ userId: uid, email, tempPassword: password, pending: !autoApprove })
   } catch (e) {
     return json({ error: String(e) }, 500)
   }
