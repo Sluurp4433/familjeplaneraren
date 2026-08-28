@@ -68,7 +68,26 @@ M0 + M1 klart:
   ingredienser, `add_meal_to_list()` RPC ("lägg alla ingredienser i
   inköpslistan", dedup mot obockade). Sida `/matsedel`.
 
-Nästa steg: M7 – polish (audit-vy i admin, veckodigest, `admin-create-user`).
+- **M7** – polish: `purge_audit_logs()` + `gdpr_purge(dry_run)` RPC:er,
+  `digest_log` + `dispatch_weekly_digest()` cron + edge function `send-digest`
+  ("Veckans schema" varje måndag), edge function `admin-create-user`
+  (superadmin/gruppadmin skapar konto med temp-lösenord). Frontend:
+  `/profil` (namn, notis-opt-out, byt lösenord), SuperAdmin-flikar
+  "Nya konton" + "Loggar" (påminnelse- + aktivitetslogg).
+
+**Appen är funktionellt komplett enligt planen.** Kvar: aktivera Resend
+(ovan) + deploy-workflow (`gh auth refresh -h github.com -s workflow`, flytta
+sedan `.github/workflows-pending/deploy.yml` → `.github/workflows/`).
+
+## Cron-jobb (pg_cron)
+
+| Jobb | Schema | Vad |
+|---|---|---|
+| `materialize-series` | 03:20 dagligen | Expanderar återkommande serier |
+| `dispatch-reminders` | var 10:e min | Skickar förfallna påminnelser |
+| `weekly-digest` | 05 varje timme | "Veckans schema" på konfigurerad veckodag/timme |
+
+För digest-mejlen: sätt även `digest_url` i `private.app_config` (redan gjort).
 
 ## Aktivera påminnelser (engångssetup)
 

@@ -44,9 +44,9 @@ export function Layout() {
           </nav>
           <div className="ml-auto flex items-center gap-2">
             {isSuperAdmin && <Badge color="amber">Superadmin</Badge>}
-            <span className="hidden text-sm text-slate-500 sm:inline">
+            <NavLink to="/profil" className="hidden text-sm text-slate-500 hover:text-brand-700 sm:inline">
               {profile?.name ?? profile?.email}
-            </span>
+            </NavLink>
             <Button variant="ghost" onClick={() => signOut()}>
               Logga ut
             </Button>

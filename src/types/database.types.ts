@@ -86,6 +86,33 @@ export type Database = {
         }
         Relationships: []
       }
+      digest_log: {
+        Row: {
+          error: string | null
+          group_id: string
+          id: string
+          period_start: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          error?: string | null
+          group_id: string
+          id?: string
+          period_start: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          error?: string | null
+          group_id?: string
+          id?: string
+          period_start?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       event_assignees: {
         Row: { event_id: string; group_id: string; person_id: string }
         Insert: { event_id: string; group_id: string; person_id: string }
@@ -781,6 +808,14 @@ export type Database = {
       add_meal_to_list: {
         Args: { p_meal: string; p_list: string }
         Returns: number
+      }
+      purge_audit_logs: {
+        Args: { older_than_days?: number }
+        Returns: number
+      }
+      gdpr_purge: {
+        Args: { dry_run?: boolean }
+        Returns: Json
       }
     }
     Enums: {

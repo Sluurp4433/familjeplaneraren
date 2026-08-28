@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
 import {
   Badge,
@@ -28,7 +30,7 @@ import {
 } from '../lib/groups'
 import type { GroupRole } from '../types/database.types'
 
-const TABS = ['Väntande', 'Familjer', 'Medlemskap', 'Personer'] as const
+const TABS = ['Väntande', 'Familjer', 'Medlemskap', 'Personer', 'Nya konton', 'Loggar'] as const
 type Tab = (typeof TABS)[number]
 
 const ROLES: { value: GroupRole; label: string }[] = [
@@ -64,6 +66,182 @@ export function SuperAdmin() {
       {tab === 'Familjer' && <GroupsTab />}
       {tab === 'Medlemskap' && <MembersTab />}
       {tab === 'Personer' && <PeopleTab />}
+      {tab === 'Nya konton' && <NewUserTab />}
+      {tab === 'Loggar' && <LogsTab />}
+    </div>
+  )
+}
+
+/* ---------- Nya konton ---------- */
+function NewUserTab() {
+  const { data: groups } = useGroups()
+  const toast = useToast()
+  const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
+  const [groupId, setGroupId] = useState('')
+  const [role, setRole] = useState<GroupRole>('medlem')
+  const [busy, setBusy] = useState(false)
+  const [result, setResult] = useState<{ email: string; tempPassword: string } | null>(null)
+
+  async function submit(e: FormEvent) {
+    e.preventDefault()
+    if (!email.trim()) return
+    setBusy(true)
+    setResult(null)
+    const { data, error } = await supabase.functions.invoke('admin-create-user', {
+      body: { email: email.trim(), name: name.trim(), groupId: groupId || null, role },
+    })
+    setBusy(false)
+    if (error || data?.error) {
+      toast.error(data?.error ?? 'Kunde inte skapa kontot')
+      return
+    }
+    setResult({ email: data.email, tempPassword: data.tempPassword })
+    setEmail('')
+    setName('')
+  }
+
+  return (
+    <Card className="p-4">
+      <h3 className="mb-3 font-semibold text-brand-800">Skapa konto med tillfälligt lösenord</h3>
+      <form className="space-y-3" onSubmit={submit}>
+        <Field label="E-post">
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </Field>
+        <Field label="Namn">
+          <Input value={name} onChange={(e) => setName(e.target.value)} />
+        </Field>
+        <div className="flex flex-wrap gap-2">
+          <Field label="Lägg i familj (valfritt)">
+            <Select value={groupId} onChange={(e) => setGroupId(e.target.value)}>
+              <option value="">–</option>
+              {(groups ?? []).map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          {groupId && (
+            <Field label="Roll">
+              <Select value={role} onChange={(e) => setRole(e.target.value as GroupRole)}>
+                {ROLES.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          )}
+        </div>
+        <Button type="submit" loading={busy}>
+          Skapa konto
+        </Button>
+      </form>
+
+      {result && (
+        <div className="mt-4 rounded-lg border border-accent-200 bg-accent-50 p-3 text-sm">
+          <p className="font-medium text-accent-800">Konto skapat</p>
+          <p className="mt-1 text-slate-700">
+            {result.email}
+            <br />
+            Tillfälligt lösenord: <code className="rounded bg-white px-1">{result.tempPassword}</code>
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Visas bara nu – kopiera och skicka till personen. De byter det under Min profil.
+          </p>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+/* ---------- Loggar ---------- */
+function LogsTab() {
+  const audit = useQuery({
+    queryKey: ['admin', 'audit'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('id, created_at, action, table_name, user_id')
+        .order('created_at', { ascending: false })
+        .limit(50)
+      if (error) throw error
+      return data ?? []
+    },
+  })
+  const reminders = useQuery({
+    queryKey: ['admin', 'reminder-log'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('reminder_log')
+        .select('id, fire_at, status, attempts, sent_at, error')
+        .order('fire_at', { ascending: false })
+        .limit(50)
+      if (error) throw error
+      return data ?? []
+    },
+  })
+
+  return (
+    <div className="space-y-6">
+      <Card className="p-4">
+        <h3 className="mb-3 font-semibold text-brand-800">Påminnelser (senaste 50)</h3>
+        {reminders.isLoading ? (
+          <LoadingState />
+        ) : (reminders.data ?? []).length === 0 ? (
+          <p className="text-sm text-slate-400">Inga påminnelser skickade än.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="text-slate-400">
+                <tr>
+                  <th className="py-1 pr-3">Tid</th>
+                  <th className="py-1 pr-3">Status</th>
+                  <th className="py-1 pr-3">Försök</th>
+                  <th className="py-1">Fel</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(reminders.data ?? []).map((r) => (
+                  <tr key={r.id} className="border-t border-slate-100">
+                    <td className="py-1 pr-3 text-slate-600">
+                      {new Date(r.fire_at).toLocaleString('sv-SE')}
+                    </td>
+                    <td className="py-1 pr-3">
+                      <Badge color={r.status === 'sent' ? 'green' : r.status === 'failed' ? 'red' : 'slate'}>
+                        {r.status}
+                      </Badge>
+                    </td>
+                    <td className="py-1 pr-3">{r.attempts}</td>
+                    <td className="py-1 text-red-600">{r.error ?? ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      <Card className="p-4">
+        <h3 className="mb-3 font-semibold text-brand-800">Aktivitetslogg (senaste 50)</h3>
+        {audit.isLoading ? (
+          <LoadingState />
+        ) : (
+          <ul className="divide-y divide-slate-100 text-xs">
+            {(audit.data ?? []).map((a) => (
+              <li key={a.id} className="flex gap-3 py-1.5">
+                <span className="w-36 shrink-0 text-slate-400">
+                  {new Date(a.created_at).toLocaleString('sv-SE')}
+                </span>
+                <span className="text-slate-700">
+                  {a.action} {a.table_name}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
     </div>
   )
 }

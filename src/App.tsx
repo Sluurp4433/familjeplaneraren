@@ -12,6 +12,7 @@ import { Calendar } from './pages/Calendar'
 import { Lists } from './pages/Lists'
 import { ListDetail } from './pages/ListDetail'
 import { Meals } from './pages/Meals'
+import { Profile } from './pages/Profile'
 import { SuperAdmin } from './pages/SuperAdmin'
 import { GroupAdmin } from './pages/GroupAdmin'
 
@@ -77,6 +78,7 @@ export function App() {
             </GroupGate>
           }
         />
+        <Route path="/profil" element={<Profile />} />
         <Route
           path="/familj"
           element={
